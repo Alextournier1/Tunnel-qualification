@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trouve ton programme — Athlètes Hybrides</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #181818;
+    --surface-2: #1f1f1f;
+    --border: #2c2c2a;
+    --text: #f4f2ec;
+    --text-mid: #b4b2a9;
+    --text-dim: #7a7972;
+    --accent: #E8440A;
+    --accent-dim: #c43208;
+    --accent-pale: #E8440A14;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* LAYOUT */
+  .shell {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 20px 60px;
+  }
+
+  /* HEADER */
+  .top-bar {
+    padding: 24px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+  .step-indicator {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .step-indicator span { color: var(--text-mid); }
+
+  /* PROGRESS */
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 40px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width .4s ease;
+  }
+
+  /* PAGES */
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn .3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .page-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: clamp(22px, 5vw, 30px);
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+  .page-sub {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-bottom: 28px;
+    line-height: 1.6;
+  }
+
+  /* CHOIX CARTES */
+  .choices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+  .choice {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    user-select: none;
+  }
+  .choice:hover { border-color: var(--text-dim); }
+  .choice.selected {
+    border-color: var(--accent);
+    background: var(--accent-pale);
+  }
+  .choice-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    width: 32px;
+    text-align: center;
+  }
+  .choice-label {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .choice-sub {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+  .choice-check {
+    margin-left: auto;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+  }
+  .choice.selected .choice-check {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .choice.selected .choice-check::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  /* CHAMPS CONDITIONNELS */
+  .cond-block {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 14px;
+    animation: fadeIn .25s ease;
+  }
+  .cond-block.visible { display: block; }
+  .cond-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  /* CHAMPS */
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    padding: 11px 13px;
+    border-radius: 8px;
+    outline: none;
+    resize: none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--accent);
+  }
+  .field input::placeholder, .field textarea::placeholder { color: var(--text-dim); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* CHECKBOXES SECONDAIRES */
+  .check-list { display: flex; flex-direction: column; gap: 8px; }
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-mid);
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: border-color .15s, background .15s;
+  }
+  .check-item:hover { border-color: var(--text-dim); }
+  .check-item.checked {
+    border-color: var(--accent);
+    background: var(--accent-pale);
+    color: var(--text);
+  }
+  .check-item input[type="checkbox"] { display: none; }
+  .check-box {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+  }
+  .check-item.checked .check-box {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .check-item.checked .check-box::after {
+    content: '✓';
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* SÉANCES SLIDER */
+  .seances-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .seance-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all .15s;
+  }
+  .seance-btn:hover { border-color: var(--text-dim); }
+  .seance-btn.selected {
+    border-color: var(--accent);
+    background: var(--accent-pale);
+  }
+  .seance-num {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--accent);
+    display: block;
+  }
+  .seance-label { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
+
+  /* CONSENT */
+  .consent-block {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 14px;
+    background: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+  .consent-block.checked { border-color: var(--accent); }
+  .consent-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+  }
+  .consent-block.checked .consent-check {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .consent-block.checked .consent-check::after {
+    content: '✓';
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .consent-text { font-size: 13px; color: var(--text-mid); line-height: 1.5; }
+
+  /* BOUTONS */
+  .btn-next {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .btn-next:hover { background: var(--accent-dim); }
+  .btn-next:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-back {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 10px 0;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-back:hover { color: var(--text); }
+
+  .err { font-size: 12.5px; color: #f0997b; margin-top: 8px; display: none; }
+
+  /* PAGE 5 SUCCESS */
+  .success-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--accent-pale);
+    border: 1px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 28px;
+  }
+  .avis-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+  .avis-quote { font-size: 14px; color: var(--text-mid); line-height: 1.6; margin-bottom: 10px; font-style: italic; }
+  .avis-name { font-size: 12.5px; font-weight: 700; color: var(--text); }
+  .avis-detail { font-size: 12px; color: var(--text-dim); }
+  .stars { color: var(--accent); font-size: 13px; margin-bottom: 6px; }
+
+  .btn-cta {
+    display: block;
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: background .15s;
+    margin-top: 20px;
+  }
+  .btn-cta:hover { background: var(--accent-dim); }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    display: inline-block;
+    animation: spin .7s linear infinite;
+    vertical-align: -3px;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 480px) {
+    .field-row { grid-template-columns: 1fr; }
+    .seances-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="top-bar">
+    <div class="logo">Athlètes Hybrides</div>
+    <div class="step-indicator">Étape <span id="stepNum">1</span> sur 4</div>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width:25%"></div>
+  </div>
+
+  <!-- PAGE 1 : OBJECTIF -->
+  <div class="page active" id="page1">
+    <div class="page-eyebrow">Ton profil</div>
+    <h1 class="page-title">Quel est ton objectif principal ?</h1>
+    <p class="page-sub">Choisis ce qui te correspond le mieux. Ton programme sera construit autour de ça.</p>
+
+    <div class="choices" id="objectifChoices">
+      <div class="choice" data-value="pdc" onclick="selectChoice(this, 'objectifChoices')">
+        <span class="choice-icon">💪</span>
+        <div>
+          <div class="choice-label">Améliorer mes performances PDC</div>
+          <div class="choice-sub">Tractions, pompes, crunchs — progresser sur les fondamentaux</div>
+        </div>
+        <div class="choice-check"></div>
+      </div>
+      <div class="choice" data-value="course" onclick="selectChoice(this, 'objectifChoices')">
+        <span class="choice-icon">🏃</span>
+        <div>
+          <div class="choice-label">Pulvériser un chrono en course à pied</div>
+          <div class="choice-sub">5km, 10km, semi, marathon ou trail</div>
+        </div>
+        <div class="choice-check"></div>
+      </div>
+      <div class="choice" data-value="force" onclick="selectChoice(this, 'objectifChoices')">
+        <span class="choice-icon">🏋️</span>
+        <div>
+          <div class="choice-label">Gagner en force</div>
+          <div class="choice-sub">Développer ma puissance et ma masse musculaire</div>
+        </div>
+        <div class="choice-check"></div>
+      </div>
+      <div class="choice" data-value="triathlon" onclick="selectChoice(this, 'objectifChoices')">
+        <span class="choice-icon">🏊</span>
+        <div>
+          <div class="choice-label">Préparer un triathlon</div>
+          <div class="choice-sub">Sprint, olympique, 70.3 ou Ironman</div>
+        </div>
+        <div class="choice-check"></div>
+      </div>
+      <div class="choice" data-value="militaire" onclick="selectChoice(this, 'objectifChoices')">
+        <span class="choice-icon">🎖️</span>
+        <div>
+          <div class="choice-label">Préparer un concours militaire / gendarmerie</div>
+          <div class="choice-sub">Tests physiques, sélection, EPITA, GIGN...</div>
+        </div>
+        <div class="choice-check"></div>
+      </div>
+      <div class="choice" data-value="hybride" onclick="selectChoice(this, 'objectifChoices')">
+        <span class="choice-icon">⚡</span>
+        <div>
+          <div class="choice-label">Devenir hybride, complet</div>
+          <div class="choice-sub">Force + endurance + performance globale</div>
+        </div>
+        <div class="choice-check"></div>
+      </div>
+    </div>
+
+    <div class="err" id="err1">Choisis un objectif pour continuer.</div>
+    <button class="btn-next" onclick="goToPage2()">Continuer →</button>
+  </div>
+
+  <!-- PAGE 2 : QUESTIONS SPÉCIFIQUES -->
+  <div class="page" id="page2">
+    <button class="btn-back" onclick="goBack(1)">← Retour</button>
+    <div class="page-eyebrow">Dis-m'en plus</div>
+    <h1 class="page-title" id="p2Title">Quelques détails sur ton objectif</h1>
+    <p class="page-sub" id="p2Sub">Ces informations me permettent de personnaliser ton programme dès le départ.</p>
+
+    <!-- COURSE -->
+    <div class="cond-block" id="block-course">
+      <div class="cond-title">🏃 Ta préparation course</div>
+      <div class="field">
+        <label>Distance cible</label>
+        <select id="courseDistance">
+          <option value="">Sélectionner...</option>
+          <option>5 km</option>
+          <option>10 km</option>
+          <option>Semi-marathon</option>
+          <option>Marathon</option>
+          <option>Trail (20-50km)</option>
+          <option>Ultra-trail (50km+)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>As-tu une course prévue ? Si oui, date</label>
+        <input type="text" id="courseDate" placeholder="ex. Marathon de Paris, 12 avril 2026">
+      </div>
+      <div class="field">
+        <label>Ton meilleur chrono de référence sur cette distance</label>
+        <input type="text" id="courseRef" placeholder="ex. 45min sur 10km il y a 3 mois">
+      </div>
+    </div>
+
+    <!-- PDC -->
+    <div class="cond-block" id="block-pdc">
+      <div class="cond-title">💪 Ton niveau actuel en PDC</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Tractions max (1 série)</label>
+          <input type="number" id="pdcTractions" placeholder="ex. 8" min="0">
+        </div>
+        <div class="field">
+          <label>Pompes max (1 série)</label>
+          <input type="number" id="pdcPompes" placeholder="ex. 30" min="0">
+        </div>
+      </div>
+      <div class="field">
+        <label>As-tu un test ou concours prévu ? Si oui, lequel et quand</label>
+        <input type="text" id="pdcTest" placeholder="ex. Test GIGN, mars 2026">
+      </div>
+    </div>
+
+    <!-- FORCE -->
+    <div class="cond-block" id="block-force">
+      <div class="cond-title">🏋️ Tes objectifs de force</div>
+      <div class="field">
+        <label>Sur quels mouvements tu veux progresser ?</label>
+        <div class="check-list" id="forceMouvements">
+          <label class="check-item" onclick="toggleCheck(this)">
+            <input type="checkbox" value="Squat">
+            <div class="check-box"></div>
+            Squat
+          </label>
+          <label class="check-item" onclick="toggleCheck(this)">
+            <input type="checkbox" value="Développé couché">
+            <div class="check-box"></div>
+            Développé couché
+          </label>
+          <label class="check-item" onclick="toggleCheck(this)">
+            <input type="checkbox" value="Soulevé de terre">
+            <div class="check-box"></div>
+            Soulevé de terre
+          </label>
+          <label class="check-item" onclick="toggleCheck(this)">
+            <input type="checkbox" value="Développé militaire">
+            <div class="check-box"></div>
+            Développé militaire
+          </label>
+          <label class="check-item" onclick="toggleCheck(this)">
+            <input type="checkbox" value="Tractions lestées">
+            <div class="check-box"></div>
+            Tractions lestées
+          </label>
+          <label class="check-item" onclick="toggleCheck(this)">
+            <input type="checkbox" value="Dips lestés">
+            <div class="check-box"></div>
+            Dips lestés
+          </label>
+        </div>
+      </div>
+      <div class="field" style="margin-top:12px">
+        <label>Expérience en musculation</label>
+        <select id="forcExp">
+          <option value="">Sélectionner...</option>
+          <option>Débutant (moins de 1 an)</option>
+          <option>Intermédiaire (1-3 ans)</option>
+          <option>Avancé (3 ans+)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- TRIATHLON -->
+    <div class="cond-block" id="block-triathlon">
+      <div class="cond-title">🏊 Ta préparation triathlon</div>
+      <div class="field">
+        <label>Format visé</label>
+        <select id="triathlonFormat">
+          <option value="">Sélectionner...</option>
+          <option>Sprint</option>
+          <option>Olympique</option>
+          <option>70.3 (Half)</option>
+          <option>Ironman (Full)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Date de l'épreuve (si connue)</label>
+        <input type="text" id="triathlonDate" placeholder="ex. 70.3 Nice, juin 2026">
+      </div>
+      <div class="field">
+        <label>Point faible à travailler en priorité</label>
+        <select id="triathlonFaible">
+          <option value="">Sélectionner...</option>
+          <option>Natation</option>
+          <option>Vélo</option>
+          <option>Course à pied</option>
+          <option>Transitions</option>
+          <option>Endurance globale</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- MILITAIRE -->
+    <div class="cond-block" id="block-militaire">
+      <div class="cond-title">🎖️ Ta préparation concours</div>
+      <div class="field">
+        <label>Concours ou sélection visée</label>
+        <input type="text" id="milConcours" placeholder="ex. Gendarmerie, Pompier, EPITA, GIGN...">
+      </div>
+      <div class="field">
+        <label>Date du test ou de la sélection</label>
+        <input type="text" id="milDate" placeholder="ex. Septembre 2026">
+      </div>
+      <div class="field">
+        <label>Tests physiques au programme (si connus)</label>
+        <input type="text" id="milTests" placeholder="ex. Cooper, 100m, tractions, pompes, gainage">
+      </div>
+    </div>
+
+    <!-- HYBRIDE -->
+    <div class="cond-block" id="block-hybride">
+      <div class="cond-title">⚡ Ton profil hybride</div>
+      <div class="field">
+        <label>Qu'est-ce qui te manque le plus actuellement ?</label>
+        <select id="hybrideManque">
+          <option value="">Sélectionner...</option>
+          <option>De l'endurance cardio</option>
+          <option>De la force et de la masse</option>
+          <option>De la vitesse</option>
+          <option>De la régularité dans l'entraînement</option>
+          <option>Une structure et un plan clair</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>As-tu un event ou objectif précis en tête ?</label>
+        <input type="text" id="hybrideObjectif" placeholder="ex. Hyrox, spartan race, compétition CrossFit...">
+      </div>
+    </div>
+
+    <div class="err" id="err2">Remplis les informations pour continuer.</div>
+    <button class="btn-next" onclick="goToPage3()">Continuer →</button>
+  </div>
+
+  <!-- PAGE 3 : DISPONIBILITÉS & CONTEXTE -->
+  <div class="page" id="page3">
+    <button class="btn-back" onclick="goBack(2)">← Retour</button>
+    <div class="page-eyebrow">Ton quotidien</div>
+    <h1 class="page-title">Comment s'organise ta semaine ?</h1>
+    <p class="page-sub">Pour que le plan soit réellement applicable sans compromettre ta vie pro et perso.</p>
+
+    <div class="field">
+      <label>Nombre de séances par semaine disponibles</label>
+      <div class="seances-grid" id="seancesGrid">
+        <div class="seance-btn" data-val="3" onclick="selectSeances(this)">
+          <span class="seance-num">3</span>
+          <div class="seance-label">séances</div>
+        </div>
+        <div class="seance-btn" data-val="4" onclick="selectSeances(this)">
+          <span class="seance-num">4</span>
+          <div class="seance-label">séances</div>
+        </div>
+        <div class="seance-btn" data-val="5" onclick="selectSeances(this)">
+          <span class="seance-num">5</span>
+          <div class="seance-label">séances</div>
+        </div>
+        <div class="seance-btn" data-val="6+" onclick="selectSeances(this)">
+          <span class="seance-num">6+</span>
+          <div class="seance-label">séances</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:16px">
+      <label>Durée moyenne d'une séance</label>
+      <select id="dureeSéance">
+        <option value="">Sélectionner...</option>
+        <option>30-45 minutes</option>
+        <option>45-60 minutes</option>
+        <option>60-90 minutes</option>
+        <option>90 minutes+</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Accès à du matériel</label>
+      <div class="check-list" id="materielList">
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="Salle de sport">
+          <div class="check-box"></div>
+          Salle de sport
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="Home gym / matériel à la maison">
+          <div class="check-box"></div>
+          Home gym / matériel à la maison
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="Piste d'athlétisme">
+          <div class="check-box"></div>
+          Piste d'athlétisme
+        </label>
+        <label class="check-item" onclick="toggleCheck(this)">
+          <input type="checkbox" value="Aucun matériel (poids de corps uniquement)">
+          <div class="check-box"></div>
+          Aucun matériel (poids de corps uniquement)
+        </label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Niveau général actuel</label>
+      <select id="niveauGeneral">
+        <option value="">Sélectionner...</option>
+        <option>Débutant — je reprends ou je commence</option>
+        <option>Intermédiaire — j'ai une base mais je stagne</option>
+        <option>Avancé — j'ai de l'expérience et je veux progresser sérieusement</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>As-tu des contraintes particulières ? (blessures, santé, temps limité...)</label>
+      <textarea id="contraintes" rows="3" placeholder="ex. Douleur genou gauche, travail en décalé, voyage fréquent..."></textarea>
+    </div>
+
+    <div class="err" id="err3">Indique ton nombre de séances et ta durée pour continuer.</div>
+    <button class="btn-next" onclick="goToPage4()">Continuer →</button>
+  </div>
+
+  <!-- PAGE 4 : CONTACT -->
+  <div class="page" id="page4">
+    <button class="btn-back" onclick="goBack(3)">← Retour</button>
+    <div class="page-eyebrow">Dernière étape</div>
+    <h1 class="page-title">Où je t'envoie ton programme ?</h1>
+    <p class="page-sub">Je reviens vers toi sous 24h avec une analyse personnalisée et les prochaines étapes.</p>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Prénom</label>
+        <input type="text" id="prenom" placeholder="ex. Thomas">
+      </div>
+      <div class="field">
+        <label>Nom</label>
+        <input type="text" id="nom" placeholder="ex. Dupont">
+      </div>
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="toi@exemple.com">
+    </div>
+    <div class="field">
+      <label>Téléphone</label>
+      <input type="tel" id="tel" placeholder="06 12 34 56 78">
+    </div>
+
+    <div class="consent-block" id="consentBlock" onclick="toggleConsent()">
+      <div class="consent-check" id="consentCheck"></div>
+      <div class="consent-text">
+        J'accepte d'être contacté par Alexandre Tournier (Athlètes Hybrides) pour discuter de mon programme personnalisé. Mes données ne seront pas partagées.
+      </div>
+    </div>
+
+    <div class="err" id="err4">Remplis tous les champs et coche la case pour envoyer.</div>
+    <button class="btn-next" id="submitBtn" onclick="submitForm()">Envoyer mon questionnaire ✓</button>
+  </div>
+
+  <!-- PAGE 5 : SUCCESS + AVIS -->
+  <div class="page" id="page5">
+    <div style="text-align:center; padding: 20px 0 32px;">
+      <div class="success-icon">✓</div>
+      <h1 class="page-title" style="text-align:center">C'est parti !</h1>
+      <p class="page-sub" style="text-align:center; margin-bottom:0">Je reviens vers toi sous 24h avec ton analyse et les prochaines étapes. En attendant, voici ce que disent les athlètes accompagnés.</p>
+    </div>
+
+    <p style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:16px;text-align:center">Ils en parlent mieux que moi</p>
+
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:24px">
+      <div class="avis-card" style="padding:0;overflow:hidden">
+        <div style="position:relative;padding-bottom:56.25%;height:0">
+          <iframe src="https://www.youtube.com/embed/TQSzPkY29vU?rel=0&modestbranding=1" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <div style="padding:14px">
+          <div style="font-size:13px;font-weight:700;color:var(--text)">Prépa hybride</div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:2px">Force + endurance</div>
+        </div>
+      </div>
+
+      <div class="avis-card" style="padding:0;overflow:hidden">
+        <div style="position:relative;padding-bottom:56.25%;height:0">
+          <iframe src="https://www.youtube.com/embed/UQyzK6-LCiY?rel=0&modestbranding=1" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <div style="padding:14px">
+          <div style="font-size:13px;font-weight:700;color:var(--text)">Progression en force</div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:2px">Résultats concrets</div>
+        </div>
+      </div>
+
+      <div class="avis-card" style="padding:0;overflow:hidden">
+        <div style="position:relative;padding-bottom:56.25%;height:0">
+          <iframe src="https://www.youtube.com/embed/GTwkfPztb8Y?rel=0&modestbranding=1" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <div style="padding:14px">
+          <div style="font-size:13px;font-weight:700;color:var(--text)">Ultra et endurance</div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:2px">Préparation longue distance</div>
+        </div>
+      </div>
+
+      <div class="avis-card" style="padding:0;overflow:hidden">
+        <div style="position:relative;padding-bottom:56.25%;height:0">
+          <iframe src="https://www.youtube.com/embed/uXRCSxn_JKc?rel=0&modestbranding=1" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <div style="padding:14px">
+          <div style="font-size:13px;font-weight:700;color:var(--text)">Coaching personnalisé</div>
+          <div style="font-size:12px;color:var(--text-dim);margin-top:2px">Suivi individualisé</div>
+        </div>
+      </div>
+    </div>
+
+    <a href="https://calendly.com/alexandretournierpro/coaching-call" target="_blank" class="btn-cta">
+      Réserver mon appel gratuit de 20 min →
+    </a>
+
+    <p style="text-align:center;margin-top:16px;font-size:12px;color:var(--text-dim)">
+      Athlètes Hybrides · <a href="https://athleteshybrides.fr" style="color:var(--text-dim)">athleteshybrides.fr</a>
+    </p>
+  </div>
+
+</div>
+
+<script>
+// ===== STATE =====
+var state = {
+  objectif: null,
+  seances: null,
+  consent: false
+};
+
+var FORMSPREE = 'https://formspree.io/f/mlgyenyn';
+
+// ===== NAVIGATION =====
+function showPage(n) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById('page' + n).classList.add('active');
+  var pct = n === 5 ? 100 : (n / 4) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('stepNum').textContent = Math.min(n, 4);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goBack(n) { showPage(n); }
+
+// ===== PAGE 1 =====
+function selectChoice(el, groupId) {
+  document.querySelectorAll('#' + groupId + ' .choice').forEach(function(c) { c.classList.remove('selected'); });
+  el.classList.add('selected');
+  state.objectif = el.getAttribute('data-value');
+}
+
+function goToPage2() {
+  if (!state.objectif) {
+    document.getElementById('err1').style.display = 'block';
+    return;
+  }
+  document.getElementById('err1').style.display = 'none';
+
+  // Afficher le bon bloc conditionnel
+  var blocks = ['course', 'pdc', 'force', 'triathlon', 'militaire', 'hybride'];
+  blocks.forEach(function(b) {
+    var el = document.getElementById('block-' + b);
+    el.classList.toggle('visible', b === state.objectif);
+  });
+
+  var titles = {
+    course: 'Ta course à pied',
+    pdc: 'Tes performances PDC',
+    force: 'Ta progression en force',
+    triathlon: 'Ton triathlon',
+    militaire: 'Ton concours',
+    hybride: 'Ton profil hybride'
+  };
+  document.getElementById('p2Title').textContent = titles[state.objectif] || 'Quelques détails';
+  showPage(2);
+}
+
+// ===== PAGE 2 =====
+function goToPage3() {
+  document.getElementById('err2').style.display = 'none';
+  showPage(3);
+}
+
+// ===== PAGE 3 =====
+function selectSeances(el) {
+  document.querySelectorAll('#seancesGrid .seance-btn').forEach(function(b) { b.classList.remove('selected'); });
+  el.classList.add('selected');
+  state.seances = el.getAttribute('data-val');
+}
+
+function goToPage4() {
+  if (!state.seances || !document.getElementById('dureeSéance').value) {
+    document.getElementById('err3').style.display = 'block';
+    return;
+  }
+  document.getElementById('err3').style.display = 'none';
+  showPage(4);
+}
+
+// ===== PAGE 4 =====
+function toggleConsent() {
+  state.consent = !state.consent;
+  document.getElementById('consentBlock').classList.toggle('checked', state.consent);
+}
+
+// ===== CHECKBOXES =====
+function toggleCheck(el) {
+  // Empêcher le double déclenchement natif du label
+  event.preventDefault();
+  el.classList.toggle('checked');
+}
+
+function getChecked(listId) {
+  var vals = [];
+  document.querySelectorAll('#' + listId + ' .check-item.checked').forEach(function(el) {
+    vals.push(el.querySelector('input') ? el.querySelector('input').value : el.textContent.trim());
+  });
+  return vals.join(', ');
+}
+
+function getCheckedFromContainer(container) {
+  var vals = [];
+  container.querySelectorAll('.check-item.checked').forEach(function(el) {
+    vals.push(el.querySelector('input') ? el.querySelector('input').value : el.textContent.trim());
+  });
+  return vals.join(', ');
+}
+
+// ===== SUBMIT =====
+async function submitForm() {
+  var prenom = document.getElementById('prenom').value.trim();
+  var nom = document.getElementById('nom').value.trim();
+  var email = document.getElementById('email').value.trim();
+  var tel = document.getElementById('tel').value.trim();
+
+  if (!prenom || !nom || !email || !tel || !state.consent) {
+    document.getElementById('err4').style.display = 'block';
+    return;
+  }
+  document.getElementById('err4').style.display = 'none';
+
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Envoi en cours...';
+
+  // Collecter toutes les données
+  var data = {
+    _subject: 'Nouveau questionnaire — ' + prenom + ' ' + nom + ' — ' + (state.objectif || ''),
+    prenom: prenom,
+    nom: nom,
+    email: email,
+    telephone: tel,
+    objectif: state.objectif,
+    seances_semaine: state.seances,
+    duree_seance: document.getElementById('dureeSéance').value,
+    niveau: document.getElementById('niveauGeneral').value,
+    contraintes: document.getElementById('contraintes').value,
+    materiel: getChecked('materielList'),
+    timestamp: new Date().toISOString(),
+    source: 'tunnel-qualification'
+  };
+
+  // Données spécifiques selon objectif
+  if (state.objectif === 'course') {
+    data.course_distance = document.getElementById('courseDistance').value;
+    data.course_date = document.getElementById('courseDate').value;
+    data.course_reference = document.getElementById('courseRef').value;
+  }
+  if (state.objectif === 'pdc') {
+    data.pdc_tractions = document.getElementById('pdcTractions').value;
+    data.pdc_pompes = document.getElementById('pdcPompes').value;
+    data.pdc_test = document.getElementById('pdcTest').value;
+  }
+  if (state.objectif === 'force') {
+    data.force_mouvements = getChecked('forceMouvements');
+    data.force_experience = document.getElementById('forcExp').value;
+  }
+  if (state.objectif === 'triathlon') {
+    data.triathlon_format = document.getElementById('triathlonFormat').value;
+    data.triathlon_date = document.getElementById('triathlonDate').value;
+    data.triathlon_faible = document.getElementById('triathlonFaible').value;
+  }
+  if (state.objectif === 'militaire') {
+    data.mil_concours = document.getElementById('milConcours').value;
+    data.mil_date = document.getElementById('milDate').value;
+    data.mil_tests = document.getElementById('milTests').value;
+  }
+  if (state.objectif === 'hybride') {
+    data.hybride_manque = document.getElementById('hybrideManque').value;
+    data.hybride_objectif = document.getElementById('hybrideObjectif').value;
+  }
+
+  try {
+    var res = await fetch(FORMSPREE, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) {
+      showPage(5);
+    } else {
+      throw new Error('Erreur serveur');
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Envoyer mon questionnaire ✓';
+    document.getElementById('err4').innerHTML = 'Une erreur est survenue. Réessaie ou contacte-moi directement.';
+    document.getElementById('err4').style.display = 'block';
+  }
+}
+</script>
+</body>
+</html>
